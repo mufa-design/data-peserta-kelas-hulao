@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Spreadsheet Kelas Offline - Jakarta, Surabaya, Semarang, Solo</title>
+    <!-- Tailwind CSS for Modern UI -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Chart.js for Live Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+        }
+        .code-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Top Navigation / Header -->
+    <header class="bg-slate-900 text-white shadow-md px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="flex items-center gap-3">
+            <div class="bg-emerald-500 text-slate-900 p-2 rounded-lg font-bold text-xl">
+                <i class="fa-solid fa-table-cells"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight">Sistem Spreadsheet Pendaftaran Kelas</h1>
+                <p class="text-xs text-slate-400">Jakarta • Surabaya • Semarang • Solo</p>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="px-4 py-2 rounded-lg text-sm font-semibold transition bg-emerald-500 text-slate-950">
+                <i class="fa-solid fa-chart-line mr-1"></i> Dashboard
+            </button>
+            <button onclick="switchTab('database')" id="nav-database" class="px-4 py-2 rounded-lg text-sm font-semibold transition text-slate-300 hover:bg-slate-800">
+                <i class="fa-solid fa-users mr-1"></i> Data Peserta
+            </button>
+            <button onclick="switchTab('rekap')" id="nav-rekap" class="px-4 py-2 rounded-lg text-sm font-semibold transition text-slate-300 hover:bg-slate-800">
+                <i class="fa-solid fa-city mr-1"></i> Rekap Kota
+            </button>
+            <button onclick="switchTab('reminder')" id="nav-reminder" class="px-4 py-2 rounded-lg text-sm font-semibold transition text-slate-300 hover:bg-slate-800">
+                <i class="fa-solid fa-bell mr-1"></i> Follow Up & WA
+            </button>
+            <button onclick="switchTab('rumus')" id="nav-rumus" class="px-4 py-2 rounded-lg text-sm font-semibold transition bg-amber-500 hover:bg-amber-600 text-slate-950">
+                <i class="fa-solid fa-copy mr-1"></i> Salin Rumus GSheets
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Frame -->
+    <main class="flex-grow p-6 max-w-[1600px] w-full mx-auto">
+
+        <!-- ================== TAB 1: DASHBOARD ================== -->
+        <section id="tab-dashboard" class="space-y-6">
+            <div class="flex justify-between items-center">
+                <h2 class="text-2xl font-bold text-slate-800">Dashboard Real-Time</h2>
+                <span class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1.5">
+                    <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span> Terhubung Otomatis
+                </span>
+            </div>
+
+            <!-- Card Grid Utama -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Peserta</p>
+                        <h3 class="text-3xl font-extrabold text-slate-800 mt-1" id="dash-total-peserta">0</h3>
+                        <p class="text-xs text-slate-400 mt-1">Seluruh kota kelas</p>
+                    </div>
+                    <div class="bg-indigo-50 text-indigo-600 p-4 rounded-xl text-2xl">
+                        <i class="fa-solid fa-user-group"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Omzet Masuk</p>
+                        <h3 class="text-2xl font-extrabold text-emerald-600 mt-1" id="dash-total-omzet">Rp 0</h3>
+                        <p class="text-xs text-slate-400 mt-1">DP + Pelunasan diterima</p>
+                    </div>
+                    <div class="bg-emerald-50 text-emerald-600 p-4 rounded-xl text-2xl">
+                        <i class="fa-solid fa-wallet"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Piutang</p>
+                        <h3 class="text-2xl font-extrabold text-rose-600 mt-1" id="dash-total-piutang">Rp 0</h3>
+                        <p class="text-xs text-slate-400 mt-1">Sisa yang harus ditagih</p>
+                    </div>
+                    <div class="bg-rose-50 text-rose-600 p-4 rounded-xl text-2xl">
+                        <i class="fa-solid fa-hand-holding-dollar"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Status Pembayaran</p>
+                    <div class="flex justify-between text-xs font-medium mb-1">
+                        <span class="text-emerald-600">Lunas: <strong id="dash-status-lunas">0</strong></span>
+                        <span class="text-amber-600">DP: <strong id="dash-status-dp">0</strong></span>
+                        <span class="text-rose-600">Belum: <strong id="dash-status-belum">0</strong></span>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-2.5 flex overflow-hidden">
+                        <div id="bar-lunas" class="bg-emerald-500 h-2.5 transition-all duration-500" style="width: 0%"></div>
+                        <div id="bar-dp" class="bg-amber-500 h-2.5 transition-all duration-500" style="width: 0%"></div>
+                        <div id="bar-belum" class="bg-rose-500 h-2.5 transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts & Visualisasi -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Chart Pendaftar per Kota -->
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm lg:col-span-2">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4"><i class="fa-solid fa-chart-simple mr-2 text-indigo-500"></i>Pendaftar per Kota Kelas</h3>
+                    <div class="relative h-[280px]">
+                        <canvas id="chartKota"></canvas>
+                    </div>
+                </div>
+
+                <!-- Keuangan Ringkas -->
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800 mb-4"><i class="fa-solid fa-chart-pie mr-2 text-emerald-500"></i>Struktur Arus Kas</h3>
+                        <div class="relative h-[200px] flex items-center justify-center">
+                            <canvas id="chartKeuangan"></canvas>
+                        </div>
+                    </div>
+                    <div class="border-t border-slate-100 pt-4 mt-4 grid grid-cols-2 gap-2 text-center text-xs">
+                        <div class="bg-emerald-50 p-2 rounded-lg">
+                            <span class="text-slate-500 block">Total DP</span>
+                            <strong class="text-emerald-700 text-sm block mt-1" id="dash-total-dp">Rp 0</strong>
+                        </div>
+                        <div class="bg-indigo-50 p-2 rounded-lg">
+                            <span class="text-slate-500 block">Total Pelunasan</span>
+                            <strong class="text-indigo-700 text-sm block mt-1" id="dash-total-pelunasan">Rp 0</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================== TAB 2: DATA PESERTA ================== -->
+        <section id="tab-database" class="hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800">Database Utama Peserta</h2>
+                    <p class="text-slate-500 text-sm">Simulasi pengisian data admin. ID, Sisa Tagihan, dan Status Pembayaran akan terhitung otomatis.</p>
+                </div>
+                <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+                    <button onclick="downloadCSV()" class="bg-slate-700 hover:bg-slate-800 text-white font-semibold px-4 py-2.5 rounded-lg text-sm flex items-center gap-2 shadow-sm transition w-full sm:w-auto justify-center">
+                        <i class="fa-solid fa-file-arrow-down"></i> Download CSV/Excel
+                    </button>
+                    <button onclick="toggleModal(true)" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2.5 rounded-lg text-sm flex items-center gap-2 shadow-sm transition w-full sm:w-auto justify-center">
+                        <i class="fa-solid fa-plus"></i> Tambah Peserta Baru
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap gap-3 items-center justify-between">
+                <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                    <div class="relative flex-grow sm:flex-grow-0">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </span>
+                        <input id="search-input" oninput="filterData()" type="text" placeholder="Cari nama / WhatsApp..." class="pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                    </div>
+                    <select id="filter-city" onchange="filterData()" class="border border-slate-200 rounded-lg text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                        <option value="">Semua Kota</option>
+                        <option value="Jakarta">Jakarta</option>
+                        <option value="Surabaya">Surabaya</option>
+                        <option value="Semarang">Semarang</option>
+                        <option value="Solo">Solo</option>
+                    </select>
+                </div>
+                <div class="text-sm text-slate-500">
+                    Menampilkan <strong id="filter-count" class="text-slate-800">0</strong> dari <strong id="total-count" class="text-slate-800">0</strong> Peserta
+                </div>
+            </div>
+
+            <!-- Spreadsheet Table Container -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 text-xs font-bold uppercase">
+                                <th class="p-4 border-r border-slate-200 text-center">ID</th>
+                                <th class="p-4 border-r border-slate-200">Nama Lengkap</th>
+                                <th class="p-4 border-r border-slate-200">Kota Kelas</th>
+                                <th class="p-4 border-r border-slate-200 text-right">Harga Kelas</th>
+                                <th class="p-4 border-r border-slate-200 text-right">Nominal DP</th>
+                                <th class="p-4 border-r border-slate-200 text-right">Pelunasan</th>
+                                <th class="p-4 border-r border-slate-200 text-right">Sisa Tagihan</th>
+                                <th class="p-4 border-r border-slate-200 text-center">Status Bayar</th>
+                                <th class="p-4 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="participant-rows" class="text-slate-700 text-sm divide-y divide-slate-150">
+                            <!-- Rows dynamically populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================== TAB 3: REKAP KOTA ================== -->
+        <section id="tab-rekap" class="hidden space-y-6">
+            <div>
+                <h2 class="text-2xl font-bold text-slate-800">Monitoring & Rekap per Kota</h2>
+                <p class="text-slate-500 text-sm">Tabel ini terhitung otomatis dari Database Utama untuk menganalisis performa kelas di masing-masing area.</p>
+            </div>
+
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 text-xs font-bold uppercase">
+                                <th class="p-4">Kota Kelas</th>
+                                <th class="p-4 text-center">Jumlah Peserta</th>
+                                <th class="p-4 text-center text-emerald-700 bg-emerald-50/50">Status Lunas</th>
+                                <th class="p-4 text-center text-amber-700 bg-amber-50/50">Status DP</th>
+                                <th class="p-4 text-center text-rose-700 bg-rose-50/50">Belum Bayar</th>
+                                <th class="p-4 text-right">Total Cashflow Masuk</th>
+                                <th class="p-4 text-right text-rose-700 font-bold bg-rose-50/20">Total Piutang</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rekap-rows" class="text-slate-700 text-sm divide-y divide-slate-150">
+                            <!-- Rows dynamically populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================== TAB 4: REMINDER & FOLLOW UP ================== -->
+        <section id="tab-reminder" class="hidden space-y-6">
+            <div>
+                <h2 class="text-2xl font-bold text-slate-800">Reminder Pembayaran & Follow Up</h2>
+                <p class="text-slate-500 text-sm">Menyaring otomatis peserta yang pembayarannya masih **DP** atau **Belum Bayar** untuk penagihan sisa pelunasan.</p>
+            </div>
+
+            <!-- Grid Reminder & Template Preview -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Daftar Tagihan Otomatis -->
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm lg:col-span-2 space-y-4">
+                    <h3 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-clipboard-list mr-2 text-rose-500"></i>Daftar Tunggu Pelunasan</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase">
+                                    <th class="p-3">Nama</th>
+                                    <th class="p-3">Kota</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3 text-right">Sisa Tagihan</th>
+                                    <th class="p-3 text-center">Aksi Follow Up</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reminder-rows" class="divide-y divide-slate-100 text-slate-700">
+                                <!-- Rows dynamically populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Template WA Generator -->
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800 mb-3"><i class="fa-brands fa-whatsapp mr-2 text-emerald-500"></i>Generator Template WhatsApp</h3>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Pilih Target Peserta</label>
+                                <select id="wa-target-select" onchange="generateWATemplate()" class="w-full border border-slate-200 rounded-lg text-sm px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                    <!-- Options populated by JS -->
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Pilih Template Pesan</label>
+                                <select id="wa-template-type" onchange="generateWATemplate()" class="w-full border border-slate-200 rounded-lg text-sm px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                    <option value="dp">1. Reminder Pembayaran DP</option>
+                                    <option value="pelunasan" selected>2. Reminder Pelunasan</option>
+                                    <option value="konfirmasi">3. Konfirmasi Pelunasan</option>
+                                    <option value="h7">4. Reminder H-7 Kelas</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Pratinjau Pesan WA</label>
+                                <div id="wa-preview" class="bg-emerald-50 p-4 rounded-xl text-slate-700 text-sm whitespace-pre-wrap border border-emerald-100 h-48 overflow-y-auto italic">
+                                    Pilih target untuk membuat pesan otomatis...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="btn-send-wa" onclick="sendWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl text-sm flex items-center justify-center gap-2 shadow-md transition disabled:opacity-50" disabled>
+                        <i class="fa-brands fa-whatsapp text-lg"></i> Kirim ke WhatsApp
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================== TAB 5: RUMUS GOOGLE SHEETS ================== -->
+        <section id="tab-rumus" class="hidden space-y-6">
+            <div>
+                <h2 class="text-2xl font-bold text-slate-800">Formula & Struktur Google Sheets</h2>
+                <p class="text-slate-500 text-sm">Gunakan salinan kode rumus di bawah ini untuk langsung diaplikasikan di Google Sheets Anda asli.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                        <span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2.5 py-1 rounded-full uppercase">1. ID Peserta Otomatis</span>
+                        <p class="text-sm text-slate-600">Letakkan rumus ini pada cell **A2** di Sheet `Data_Peserta` untuk membuat ID berurutan secara otomatis.</p>
+                        <div class="bg-slate-900 text-slate-100 p-3 rounded-lg code-font text-xs overflow-x-auto relative group">
+                            <code>=ARRAYFORMULA(IF(ISBLANK(C2:C); ""; "REG-" & TEXT(ROW(C2:C)-1; "000")))</code>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                        <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full uppercase">2. Hitung Sisa Tagihan</span>
+                        <p class="text-sm text-slate-600">Letakkan rumus ini pada cell **J2** di Sheet `Data_Peserta` untuk kalkulasi sisa piutang secara otomatis.</p>
+                        <div class="bg-slate-900 text-slate-100 p-3 rounded-lg code-font text-xs overflow-x-auto">
+                            <code>=ARRAYFORMULA(IF(ISBLANK(C2:C); ""; G2:G - H2:H - K2:K))</code>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                        <span class="bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-1 rounded-full uppercase">3. Status Pembayaran Otomatis</span>
+                        <p class="text-sm text-slate-600">Letakkan rumus ini pada cell **M2** di Sheet `Data_Peserta`. Status akan otomatis berubah berdasarkan jumlah pembayaran.</p>
+                        <div class="bg-slate-900 text-slate-100 p-3 rounded-lg code-font text-xs overflow-x-auto">
+                            <code>=ARRAYFORMULA(IF(ISBLANK(C2:C); ""; IF(H2:H+K2:K>=G2:G; "Lunas"; IF(H2:H>0; "DP"; "Belum Bayar"))))</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                        <span class="bg-rose-100 text-rose-800 text-xs font-bold px-2.5 py-1 rounded-full uppercase">4. Penyaring Auto-Reminder (QUERY)</span>
+                        <p class="text-sm text-slate-600">Gunakan fungsi **QUERY** di cell **A1** pada Sheet `Reminder_FollowUp` untuk menarik peserta yang memiliki sisa hutang.</p>
+                        <div class="bg-slate-900 text-slate-100 p-3 rounded-lg code-font text-xs overflow-x-auto">
+                            <code>=QUERY(Data_Peserta!A1:O; "SELECT C, D, E, M, J WHERE M = 'DP' OR M = 'Belum Bayar' ORDER BY M DESC"; 1)</code>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                        <span class="bg-teal-100 text-teal-800 text-xs font-bold px-2.5 py-1 rounded-full uppercase">5. Link WhatsApp Generator</span>
+                        <p class="text-sm text-slate-600">Formula untuk mengirim pesan terpersonalisasi langsung dari spreadsheet ke WhatsApp Web/App.</p>
+                        <div class="bg-slate-900 text-slate-100 p-3 rounded-lg code-font text-xs overflow-x-auto">
+                            <code>=IF(ISBLANK(A2);"";"https://api.whatsapp.com/send?phone="&B2&"&text=Halo%20"&ENCODEURL(A2)&"%2C%20berikut%20reminder%20pelunasan%20kelas%20offline%20di%20"&ENCODEURL(C2)&".%20Sisa%20tagihan%20Anda%20adalah%20Rp%20"&TEXT(B2;"#,##0"))</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-900 text-slate-400 py-4 px-6 text-center text-xs mt-auto border-t border-slate-800">
+        &copy; 2026 Dashboard & Spreadsheet Management System. Made for Google Sheets Workflow.
+    </footer>
+
+    <!-- ================== MODAL: TAMBAH PESERTA ================== -->
+    <div id="modal-add" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+        <div class="bg-white w-full max-w-xl rounded-2xl shadow-xl overflow-hidden flex flex-col">
+            <div class="bg-slate-900 text-white p-5 flex justify-between items-center">
+                <h3 class="text-lg font-bold"><i class="fa-solid fa-user-plus mr-2 text-emerald-500"></i>Tambah Data Pendaftar</h3>
+                <button onclick="toggleModal(false)" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <form id="add-form" onsubmit="saveParticipant(event)" class="p-6 space-y-4 overflow-y-auto max-h-[80vh]">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Nama Peserta</label>
+                        <input type="text" id="form-name" required class="w-full border border-slate-200 rounded-lg text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">No WhatsApp</label>
+                        <input type="text" id="form-wa" required placeholder="628123456xxx" class="w-full border border-slate-200 rounded-lg text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Kota Kelas</label>
+                        <select id="form-city" required class="w-full border border-slate-200 rounded-lg text-sm px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="Jakarta">Jakarta</option>
+                            <option value="Surabaya">Surabaya</option>
+                            <option value="Semarang">Semarang</option>
+                            <option value="Solo">Solo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Sumber Leads</label>
+                        <input type="text" id="form-leads" placeholder="Instagram, TikTok, Teman" class="w-full border border-slate-200 rounded-lg text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Harga Kelas (Rp)</label>
+                        <input type="number" id="form-price" required value="2000000" class="w-full border border-slate-200 rounded-lg text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Bayar DP (Rp)</label>
+                        <input type="number" id="form-dp" value="500000" class="w-full border border-slate-200 rounded-lg text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Pelunasan (Rp)</label>
+                        <input type="number" id="form-pelunasan" value="0" class="w-full border border-slate-200 rounded-lg text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-4 border-t border-slate-100">
+                    <button type="button" onclick="toggleModal(false)" class="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-700">Batal</button>
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition">Simpan Peserta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================== JAVASCRIPT SYSTEM ================== -->
+    <script>
+        // Initial Mock Database
+        let participants = JSON.parse(localStorage.getItem('off_classes_participants')) || [
+            { id: "REG-001", date: "2026-06-10", name: "Ahmad Prasetyo", wa: "6281234567890", city: "Jakarta", leads: "Instagram", price: 2500000, dp: 2500000, paid: 0, status: "Lunas" },
+            { id: "REG-002", date: "2026-06-11", name: "Budi Santoso", wa: "6289876543210", city: "Surabaya", leads: "IG Ads", price: 2000000, dp: 500000, paid: 0, status: "DP" },
+            { id: "REG-003", date: "2026-06-12", name: "Citra Dewi", wa: "6285432109876", city: "Semarang", leads: "TikTok", price: 1800000, dp: 1800000, paid: 0, status: "Lunas" },
+            { id: "REG-004", date: "2026-06-12", name: "Dedi Setiawan", wa: "6281211223344", city: "Solo", leads: "TikTok Ads", price: 1500000, dp: 0, paid: 0, status: "Belum Bayar" },
+            { id: "REG-005", date: "2026-06-14", name: "Eka Wahyuni", wa: "6285566778899", city: "Jakarta", leads: "Rekomendasi", price: 2500000, dp: 1000000, paid: 1500000, status: "Lunas" },
+            { id: "REG-006", date: "2026-06-15", name: "Fajar Pratama", wa: "6281314151617", city: "Surabaya", leads: "IG Ads", price: 2000000, dp: 500000, paid: 0, status: "DP" },
+            { id: "REG-007", date: "2026-06-15", name: "Gita Lestari", wa: "6281819202122", city: "Semarang", leads: "Instagram", price: 1800000, dp: 500000, paid: 0, status: "DP" }
+        ];
+
+        let chartKotaInstance = null;
+        let chartKeuanganInstance = null;
+
+        // Document Ready Event Handler
+        document.addEventListener("DOMContentLoaded", () => {
+            initApp();
+        });
+
+        function initApp() {
+            calculateFinancials();
+            renderTable();
+            renderRekapKota();
+            renderReminderList();
+            renderCharts();
+        }
+
+        // Switch Tab Logic
+        function switchTab(tabId) {
+            const tabs = ['dashboard', 'database', 'rekap', 'reminder', 'rumus'];
+            tabs.forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`nav-${t}`).className = "px-4 py-2 rounded-lg text-sm font-semibold transition text-slate-300 hover:bg-slate-800";
+            });
+
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            if(tabId === 'rumus') {
+                document.getElementById(`nav-${tabId}`).className = "px-4 py-2 rounded-lg text-sm font-semibold transition bg-amber-500 hover:bg-amber-600 text-slate-950";
+            } else {
+                document.getElementById(`nav-${tabId}`).className = "px-4 py-2 rounded-lg text-sm font-semibold transition bg-emerald-500 text-slate-950";
+            }
+        }
+
+        // Helper Format Currency
+        function formatRupiah(number) {
+            return new Intl.NumberFormat("id-ID", {
+                style: "currency",
+                currency: "IDR",
+                maximumFractionDigits: 0
+            }).format(number);
+        }
+
+        // Auto ID Generator
+        function generateID() {
+            let nextNum = participants.length + 1;
+            return "REG-" + String(nextNum).padStart(3, '0');
+        }
+
+        // Save Participant
+        function saveParticipant(e) {
+            e.preventDefault();
+            const name = document.getElementById('form-name').value;
+            const waRaw = document.getElementById('form-wa').value;
+            const city = document.getElementById('form-city').value;
+            const leads = document.getElementById('form-leads').value || 'Maju Mandiri';
+            const price = parseFloat(document.getElementById('form-price').value) || 0;
+            const dp = parseFloat(document.getElementById('form-dp').value) || 0;
+            const paid = parseFloat(document.getElementById('form-pelunasan').value) || 0;
+
+            // Simple validation WA number
+            let wa = waRaw.replace(/\D/g, '');
+            if(wa.startsWith('0')) {
+                wa = '62' + wa.slice(1);
+            }
+
+            // Determine status
+            let status = "Belum Bayar";
+            if (dp + paid >= price) {
+                status = "Lunas";
+            } else if (dp > 0) {
+                status = "DP";
+            }
+
+            const newRecord = {
+                id: generateID(),
+                date: new Date().toISOString().split('T')[0],
+                name,
+                wa,
+                city,
+                leads,
+                price,
+                dp,
+                paid,
+                status
+            };
+
+            participants.push(newRecord);
+            localStorage.setItem('off_classes_participants', JSON.stringify(participants));
+            
+            toggleModal(false);
+            document.getElementById('add-form').reset();
+            
+            // Reload All Screens
+            initApp();
+        }
+
+        // Delete Participant
+        function deleteParticipant(id) {
+            if(confirm('Apakah Anda yakin ingin menghapus data peserta ' + id + '?')) {
+                participants = participants.filter(p => p.id !== id);
+                localStorage.setItem('off_classes_participants', JSON.stringify(participants));
+                initApp();
+            }
+        }
+
+        // Modal Controls
+        function toggleModal(show) {
+            const modal = document.getElementById('modal-add');
+            if (show) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
+        }
+
+        // Dynamic Database Calculations
+        function calculateFinancials() {
+            let totalPeserta = participants.length;
+            let totalLunas = 0;
+            let totalDPStatus = 0;
+            let totalBelumBayarStatus = 0;
+
+            let totalDPValue = 0;
+            let totalPelunasanValue = 0;
+            let totalPiutang = 0;
+
+            participants.forEach(p => {
+                totalDPValue += p.dp;
+                totalPelunasanValue += p.paid;
+                totalPiutang += (p.price - p.dp - p.paid);
+
+                if (p.status === 'Lunas') totalLunas++;
+                else if (p.status === 'DP') totalDPStatus++;
+                else totalBelumBayarStatus++;
+            });
+
+            let totalOmzet = totalDPValue + totalPelunasanValue;
+
+            // Populate dashboard
+            document.getElementById('dash-total-peserta').innerText = totalPeserta;
+            document.getElementById('dash-total-omzet').innerText = formatRupiah(totalOmzet);
+            document.getElementById('dash-total-piutang').innerText = formatRupiah(totalPiutang);
+            
+            document.getElementById('dash-total-dp').innerText = formatRupiah(totalDPValue);
+            document.getElementById('dash-total-pelunasan').innerText = formatRupiah(totalPelunasanValue);
+
+            document.getElementById('dash-status-lunas').innerText = totalLunas;
+            document.getElementById('dash-status-dp').innerText = totalDPStatus;
+            document.getElementById('dash-status-belum').innerText = totalBelumBayarStatus;
+
+            // Bar update percentages
+            if (totalPeserta > 0) {
+                document.getElementById('bar-lunas').style.width = (totalLunas / totalPeserta * 100) + '%';
+                document.getElementById('bar-dp').style.width = (totalDPStatus / totalPeserta * 100) + '%';
+                document.getElementById('bar-belum').style.width = (totalBelumBayarStatus / totalPeserta * 100) + '%';
+            }
+        }
+
+        // Render Database Table Row
+        function renderTable() {
+            const tbody = document.getElementById('participant-rows');
+            tbody.innerHTML = '';
+
+            let query = document.getElementById('search-input').value.toLowerCase();
+            let selectedCity = document.getElementById('filter-city').value;
+
+            let filtered = participants.filter(p => {
+                let matchesSearch = p.name.toLowerCase().includes(query) || p.wa.includes(query);
+                let matchesCity = selectedCity === "" || p.city === selectedCity;
+                return matchesSearch && matchesCity;
+            });
+
+            document.getElementById('filter-count').innerText = filtered.length;
+            document.getElementById('total-count').innerText = participants.length;
+
+            filtered.forEach(p => {
+                let sisa = p.price - p.dp - p.paid;
+                let statusClass = "bg-rose-100 text-rose-800";
+                if(p.status === 'Lunas') statusClass = "bg-emerald-100 text-emerald-800";
+                else if(p.status === 'DP') statusClass = "bg-amber-100 text-amber-800";
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-4 border-r border-slate-150 font-bold text-slate-500 text-center">${p.id}</td>
+                        <td class="p-4 border-r border-slate-150 font-semibold text-slate-800">${p.name}</td>
+                        <td class="p-4 border-r border-slate-150 text-slate-600"><span class="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md font-semibold text-xs">${p.city}</span></td>
+                        <td class="p-4 border-r border-slate-150 text-right font-medium text-slate-600">${formatRupiah(p.price)}</td>
+                        <td class="p-4 border-r border-slate-150 text-right text-emerald-600">${formatRupiah(p.dp)}</td>
+                        <td class="p-4 border-r border-slate-150 text-right text-indigo-600">${formatRupiah(p.paid)}</td>
+                        <td class="p-4 border-r border-slate-150 text-right font-bold text-rose-600">${formatRupiah(sisa)}</td>
+                        <td class="p-4 border-r border-slate-150 text-center">
+                            <span class="px-3 py-1 rounded-full text-xs font-bold ${statusClass}">${p.status}</span>
+                        </td>
+                        <td class="p-4 text-center">
+                            <button onclick="deleteParticipant('${p.id}')" class="text-rose-500 hover:text-rose-700 p-1 transition">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function filterData() {
+            renderTable();
+        }
+
+        // Download database as CSV file compatible with Excel
+        function downloadCSV() {
+            // Define CSV column headers
+            const headers = [
+                "ID Peserta", 
+                "Tanggal Daftar", 
+                "Nama Lengkap", 
+                "Nomor WhatsApp", 
+                "Kota Kelas", 
+                "Sumber Leads", 
+                "Harga Kelas", 
+                "Nominal DP", 
+                "Pelunasan", 
+                "Sisa Tagihan", 
+                "Status Pembayaran"
+            ];
+
+            // Build rows from participant array
+            const rows = participants.map(p => {
+                const sisa = p.price - p.dp - p.paid;
+                return [
+                    p.id,
+                    p.date || new Date().toISOString().split('T')[0],
+                    `"${p.name.replace(/"/g, '""')}"`, // escape quotes in name
+                    `'${p.wa}`, // single quote prevents Excel from stripping leading zero or converting to scientific format
+                    p.city,
+                    `"${(p.leads || '').replace(/"/g, '""')}"`,
+                    p.price,
+                    p.dp,
+                    p.paid,
+                    sisa,
+                    p.status
+                ];
+            });
+
+            // Assemble CSV content (using standard comma separator with double-quoted values)
+            const csvContent = [
+                headers.join(","),
+                ...rows.map(e => e.join(","))
+            ].join("\n");
+
+            // Add Byte Order Mark (BOM) to force UTF-8 parsing in Microsoft Excel
+            const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            
+            // Create a temporary link element and click it to download
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `data_peserta_kelas_offline_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Render Monitoring per Kota
+        function renderRekapKota() {
+            const cities = ["Jakarta", "Surabaya", "Semarang", "Solo"];
+            const tbody = document.getElementById('rekap-rows');
+            tbody.innerHTML = '';
+
+            cities.forEach(city => {
+                let list = participants.filter(p => p.city === city);
+                let peserta = list.length;
+                let lunas = list.filter(p => p.status === 'Lunas').length;
+                let dp = list.filter(p => p.status === 'DP').length;
+                let belum = list.filter(p => p.status === 'Belum Bayar').length;
+
+                let omzet = list.reduce((sum, p) => sum + p.dp + p.paid, 0);
+                let piutang = list.reduce((sum, p) => sum + (p.price - p.dp - p.paid), 0);
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-4 font-bold text-slate-800 text-base">${city}</td>
+                        <td class="p-4 text-center font-semibold text-slate-600">${peserta}</td>
+                        <td class="p-4 text-center font-semibold text-emerald-700 bg-emerald-50/20">${lunas}</td>
+                        <td class="p-4 text-center font-semibold text-amber-700 bg-amber-50/20">${dp}</td>
+                        <td class="p-4 text-center font-semibold text-rose-700 bg-rose-50/20">${belum}</td>
+                        <td class="p-4 text-right font-bold text-emerald-600">${formatRupiah(omzet)}</td>
+                        <td class="p-4 text-right font-bold text-rose-600 bg-rose-50/10">${formatRupiah(piutang)}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Render Reminder List & Setup WA Dropdown Options
+        function renderReminderList() {
+            const tbody = document.getElementById('reminder-rows');
+            const select = document.getElementById('wa-target-select');
+            
+            tbody.innerHTML = '';
+            select.innerHTML = '<option value="">Pilih Target...</option>';
+
+            // Filter for non-paid
+            let targetList = participants.filter(p => p.status === 'DP' || p.status === 'Belum Bayar');
+
+            if(targetList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Hebat! Semua tagihan telah lunas.</td></tr>`;
+                document.getElementById('btn-send-wa').disabled = true;
+                return;
+            }
+
+            targetList.forEach(p => {
+                let sisa = p.price - p.dp - p.paid;
+                let statusClass = p.status === 'DP' ? "bg-amber-100 text-amber-800" : "bg-rose-100 text-rose-800";
+                
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3 font-semibold text-slate-800">${p.name}</td>
+                        <td class="p-3"><span class="bg-indigo-50 text-indigo-700 text-2xs px-2 py-0.5 rounded font-semibold">${p.city}</span></td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${statusClass}">${p.status}</span></td>
+                        <td class="p-3 text-right font-bold text-rose-600">${formatRupiah(sisa)}</td>
+                        <td class="p-3 text-center">
+                            <button onclick="selectTargetForWA('${p.id}')" class="bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 px-3 py-1 rounded-lg font-bold text-2xs transition">
+                                <i class="fa-brands fa-whatsapp"></i> Siapkan Pesan
+                            </button>
+                        </td>
+                    </tr>
+                `;
+
+                // Add to dropdown options
+                select.innerHTML += `<option value="${p.id}">${p.name} (${p.city} - sisa ${formatRupiah(sisa)})</option>`;
+            });
+        }
+
+        // Select Target from Quick Table Buttons
+        function selectTargetForWA(id) {
+            document.getElementById('wa-target-select').value = id;
+            generateWATemplate();
+        }
+
+        // WhatsApp Template Logic Generator
+        function generateWATemplate() {
+            const targetId = document.getElementById('wa-target-select').value;
+            const tempType = document.getElementById('wa-template-type').value;
+            const previewBox = document.getElementById('wa-preview');
+            const btnSend = document.getElementById('btn-send-wa');
+
+            if(!targetId) {
+                previewBox.innerHTML = "Pilih target untuk membuat pesan otomatis...";
+                previewBox.className = "bg-emerald-50 p-4 rounded-xl text-slate-700 text-sm border border-emerald-100 h-48 overflow-y-auto italic";
+                btnSend.disabled = true;
+                return;
+            }
+
+            const p = participants.find(part => part.id === targetId);
+            let sisa = p.price - p.dp - p.paid;
+            let message = "";
+
+            if(tempType === 'dp') {
+                message = `Halo Kak ${p.name},\n\nTerima kasih telah mendaftar kelas offline di kota *${p.city}*. Untuk mengunci kuota agar aman, silakan lakukan pembayaran DP Anda sebesar *${formatRupiah(p.price * 0.25)}*.\n\nDetail rekening transfer akan kami infokan setelah ini ya. Terima kasih!`;
+            } else if(tempType === 'pelunasan') {
+                message = `Halo Kak ${p.name},\n\nSemoga sehat selalu. Kami dari admin kelas offline kota *${p.city}* ingin memberikan pengingat bahwa pendaftaran Anda masih memiliki sisa tagihan sebesar *${formatRupiah(sisa)}*.\n\nMohon lakukan pelunasan sebelum pelaksanaan agar pendaftaran tidak hangus. Terima kasih banyak Kak! 😊`;
+            } else if(tempType === 'konfirmasi') {
+                message = `Halo Kak ${p.name},\n\nPembayaran pelunasan Anda sebesar *${formatRupiah(sisa)}* telah kami terima dengan sukses. Status pendaftaran Anda saat ini sudah *100% Lunas* untuk kelas offline kota *${p.city}*.\n\nSampai jumpa di kelas!`;
+            } else {
+                message = `Halo Kak ${p.name},\n\nTidak terasa *H-7* menuju kelas offline di kota *${p.city}*. Mohon pastikan sisa pelunasan Anda sebesar *${formatRupiah(sisa)}* diselesaikan demi kenyamanan registrasi ulang.\n\nSampai jumpa di lokasi kelas ya Kak!`;
+            }
+
+            previewBox.innerText = message;
+            previewBox.className = "bg-white p-4 rounded-xl text-slate-800 text-sm border border-emerald-200 h-48 overflow-y-auto font-medium shadow-inner";
+            btnSend.disabled = false;
+        }
+
+        // Open WhatsApp Web API
+        function sendWhatsApp() {
+            const targetId = document.getElementById('wa-target-select').value;
+            const p = participants.find(part => part.id === targetId);
+            const text = encodeURIComponent(document.getElementById('wa-preview').innerText);
+
+            const url = `https://api.whatsapp.com/send?phone=${p.wa}&text=${text}`;
+            window.open(url, '_blank');
+        }
+
+        // Render Analytics Charts
+        function renderCharts() {
+            const cities = ["Jakarta", "Surabaya", "Semarang", "Solo"];
+            
+            // Collect Chart Data Grouped By City
+            let countData = cities.map(city => participants.filter(p => p.city === city).length);
+            
+            // Financial structure proportional variables
+            let totalDP = participants.reduce((sum, p) => sum + p.dp, 0);
+            let totalPaid = participants.reduce((sum, p) => sum + p.paid, 0);
+            let totalPiutang = participants.reduce((sum, p) => sum + (p.price - p.dp - p.paid), 0);
+
+            // 1. Bar Chart: Registrants by Cities
+            const ctxKota = document.getElementById('chartKota').getContext('2d');
+            if (chartKotaInstance) chartKotaInstance.destroy();
+
+            chartKotaInstance = new Chart(ctxKota, {
+                type: 'bar',
+                data: {
+                    labels: cities,
+                    datasets: [{
+                        label: 'Jumlah Peserta Terdaftar',
+                        data: countData,
+                        backgroundColor: [
+                            '#4f46e5', // Indigo
+                            '#06b6d4', // Cyan
+                            '#f59e0b', // Amber
+                            '#10b981'  // Emerald
+                        ],
+                        borderWidth: 0,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 }
+                        }
+                    }
+                }
+            });
+
+            // 2. Doughnut Chart: Cashflow Proportions
+            const ctxKeuangan = document.getElementById('chartKeuangan').getContext('2d');
+            if (chartKeuanganInstance) chartKeuanganInstance.destroy();
+
+            chartKeuanganInstance = new Chart(ctxKeuangan, {
+                type: 'doughnut',
+                data: {
+                    labels: ['DP Masuk', 'Pelunasan', 'Piutang'],
+                    datasets: [{
+                        data: [totalDP, totalPaid, totalPiutang],
+                        backgroundColor: ['#10b981', '#6366f1', '#f43f5e'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { boxWidth: 12, font: { family: 'Plus Jakarta Sans', size: 11 } }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+    </script>
+</body>
+</html>
